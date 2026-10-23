@@ -1,0 +1,686 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#191123">
+<title>YOSRA — Magical Halloween</title>
+<style>
+:root{
+  --bg:#191123;
+  --panel:#251a34;
+  --cream:#fff5e7;
+  --muted:#d6c8df;
+  --orange:#ff9e43;
+  --gold:#ffda8a;
+  --green:#9de3b0;
+  --red:#ffaaa8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;color:var(--cream);
+  background:radial-gradient(ellipse at top,#39234d 0%,transparent 48%),
+  linear-gradient(160deg,#191123,#21152d 60%,#120d1b);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+button,select{font:inherit}
+button{cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+header{text-align:center;padding:25px 15px 18px}
+.brand{color:var(--gold);font-size:.76rem;font-weight:800;letter-spacing:4px}
+h1{font-size:clamp(1.8rem,7vw,2.7rem);line-height:1.2;margin:10px 0}
+.subtitle{color:var(--muted);font-size:.94rem}
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:15px auto 0}
+.stat{background:#ffffff0c;border:1px solid #ffffff20;border-radius:15px;padding:8px 14px;font-size:.9rem}
+.stat strong{color:var(--gold)}
+main{width:min(760px,100%);margin:auto;padding:0 14px 35px}
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 16px}
+.tab{border:1px solid #ffffff22;background:#ffffff0a;color:var(--cream);border-radius:13px;padding:12px 5px;font-weight:700;font-size:.85rem}
+.tab.active{background:linear-gradient(135deg,#7e4ca8,#51316f);border-color:var(--gold);color:white}
+.panel{display:none;background:linear-gradient(145deg,#2c203b,#21172d);border:1px solid #ffffff1b;border-radius:22px;padding:18px;box-shadow:0 14px 35px #0002}
+.panel.active{display:block}
+h2{font-size:1.35rem;margin:0 0 8px}
+.intro{color:var(--muted);line-height:1.7;margin:0 0 17px}
+.pumpkin-stage{display:flex;justify-content:center;align-items:center;min-height:200px;margin:12px 0}
+.pumpkin-svg{width:min(230px,65vw);filter:drop-shadow(0 12px 15px #0005)}
+.btn{border:0;border-radius:13px;padding:12px 16px;background:linear-gradient(135deg,var(--orange),#e8782d);color:#29162a;font-weight:800}
+.btn.secondary{background:#ffffff12;color:var(--cream);border:1px solid #ffffff2c}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
+.question{font-size:1.16rem;font-weight:750;line-height:1.6;margin:15px 0}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.option{min-height:58px;border:1px solid #ffffff24;border-radius:14px;background:#ffffff0b;color:var(--cream);padding:12px;font-weight:650}
+.option.correct{border-color:var(--green);background:#24583d55}
+.option.wrong{border-color:var(--red);background:#7a303055}
+.feedback{min-height:30px;margin-top:13px;font-weight:700;line-height:1.5}
+.progress{height:7px;background:#ffffff15;border-radius:20px;overflow:hidden;margin:15px 0}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--gold));transition:width .25s}
+.small{font-size:.88rem;color:var(--muted)}
+.decor-grid{display:grid;gap:15px}
+.control-row{display:grid;grid-template-columns:105px 1fr;gap:12px;align-items:center}
+.control-row label{font-size:.92rem;color:var(--muted)}
+select{width:100%;padding:11px;border-radius:11px;color:var(--cream);background:#30213f;border:1px solid #ffffff2c}
+select option{background:#30213f}
+.memory-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:15px}
+.memory-card{min-height:86px;border:1px solid #ffffff22;border-radius:13px;background:#392748;color:var(--cream);font-size:1.9rem;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;gap:4px}
+.memory-card .word{font-size:.72rem;overflow-wrap:anywhere}
+.memory-card.matched{border-color:var(--green);background:#24583d55}
+.memory-card.revealed{border-color:var(--gold)}
+.badge{display:none;text-align:center;padding:16px;margin-top:15px;border:1px solid var(--gold);border-radius:16px;color:var(--gold);background:#ffda8a0c;font-weight:800}
+.badge.show{display:block}
+footer{text-align:center;color:#b9a9c6;font-size:.8rem;padding:20px}
+.falling-item{position:fixed;top:-30px;pointer-events:none;z-index:20;animation:fall linear forwards;font-size:24px}
+@keyframes fall{to{transform:translate3d(var(--drift),110vh,0) rotate(620deg);opacity:.2}}
+@media(max-width:390px){.panel{padding:14px}.memory-grid{gap:5px}.memory-card{min-height:75px}.tabs{gap:5px}.tab{font-size:.76rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">YOSRA × BEAU JOUR</div>
+  <h1>🎃 Magical Halloween</h1>
+  <p class="subtitle">A magical adventure full of surprises!</p>
+  <div class="stats">
+    <div class="stat">⭐ Score: <strong id="score">0</strong></div>
+    <div class="stat">🎯 Activities: <strong id="completed">0</strong>/3</div>
+  </div>
+</header>
+
+<main>
+  <nav class="tabs" aria-label="Activities">
+    <button class="tab active" data-tab="quiz">🎃 Dino's Challenge</button>
+    <button class="tab" data-tab="decor">✨ My Pumpkin</button>
+    <button class="tab" data-tab="memory">🧠 Memory Game</button>
+  </nav>
+
+  <section class="panel active" id="quiz">
+    <h2>🎃 Dino's Halloween Challenge</h2>
+    <p class="intro">Read the question, listen to the English pronunciation, and choose the correct answer.</p>
+    <div class="progress"><div id="quizProgress"></div></div>
+    <div class="small" id="questionNumber">Question 1 of 5</div>
+    <div class="question" id="questionText">What does Dino buy?</div>
+    <div class="actions">
+      <button class="btn secondary" id="listenQuestion">🔊 Listen to the question</button>
+    </div>
+    <div class="options" id="answerOptions"></div>
+    <div class="feedback" id="quizFeedback" aria-live="polite"></div>
+    <div class="actions">
+      <button class="btn" id="nextQuestion" disabled>Next question →</button>
+      <button class="btn secondary" id="restartQuiz">↻ Restart</button>
+    </div>
+    <div class="badge" id="quizBadge">🏅 Amazing! You're a Halloween champion!</div>
+  </section>
+
+  <section class="panel" id="decor">
+    <h2>✨ Decorate Your Pumpkin</h2>
+    <p class="intro">Choose the eyes, mouth, and an accessory. Tap the speaker to hear the English words.</p>
+    <div class="pumpkin-stage">
+      <svg class="pumpkin-svg" viewBox="0 0 240 240" role="img" aria-label="Decorated pumpkin">
+        <path d="M116 44 Q103 22 125 14 Q143 11 143 29 L137 51" fill="#557c39" stroke="#35562b" stroke-width="4"/>
+        <path d="M120 52 C72 25 31 66 28 121 C20 177 61 213 120 215 C179 213 220 177 212 121 C209 66 168 25 120 52Z" fill="#ff9e43" stroke="#db702a" stroke-width="5"/>
+        <path d="M120 53 C95 74 95 181 120 213" fill="none" stroke="#e77d2f" stroke-width="5"/>
+        <path d="M85 51 C59 76 58 173 88 201" fill="none" stroke="#e77d2f" stroke-width="4"/>
+        <path d="M155 51 C181 76 182 173 152 201" fill="none" stroke="#e77d2f" stroke-width="4"/>
+        <g id="eyes">
+          <path d="M65 104 L91 82 L98 116Z" fill="#24152a" stroke="#6e321f" stroke-width="2"/>
+          <path d="M145 116 L152 82 L178 104Z" fill="#24152a" stroke="#6e321f" stroke-width="2"/>
+        </g>
+        <g id="mouth">
+          <path d="M70 145 Q120 192 170 145 Q145 204 120 187 Q95 204 70 145Z" fill="#24152a" stroke="#6e321f" stroke-width="3"/>
+        </g>
+        <g id="accessory">
+          <path d="M61 80 L179 80 L160 67 L80 67Z" fill="#30213f" stroke="#171020" stroke-width="3"/>
+          <path d="M85 68 L100 29 Q120 13 140 29 L155 68Z" fill="#30213f" stroke="#171020" stroke-width="3"/>
+          <path d="M97 49 L146 49" stroke="#ffda8a" stroke-width="7"/>
+          <path d="M75 82 L165 82" stroke="#ffda8a" stroke-width="4"/>
+        </g>
+        <g id="glasses" fill="none" stroke="#30213f" stroke-width="5" style="display:none">
+          <circle cx="82" cy="105" r="21"/><circle cx="158" cy="105" r="21"/>
+          <path d="M103 105 L137 105 M60 100 L47 94 M180 100 L193 94"/>
+        </g>
+        <g id="glow" style="display:none">
+          <circle cx="120" cy="132" r="61" fill="#ffda8a" opacity=".16"/>
+          <path d="M115 127 Q120 118 125 127 Q132 136 120 145 Q108 136 115 127Z" fill="#fff4b0"/>
+        </g>
+      </svg>
+    </div>
+    <div class="decor-grid">
+      <div class="control-row">
+        <label for="eyeChoice">Eyes</label>
+        <select id="eyeChoice">
+          <option value="triangle">Triangle eyes</option>
+          <option value="round">Round eyes</option>
+          <option value="sleepy">Mischievous eyes</option>
+        </select>
+      </div>
+      <div class="control-row">
+        <label for="mouthChoice">Mouth</label>
+        <select id="mouthChoice">
+          <option value="smile">A smile</option>
+          <option value="zigzag">A zigzag mouth</option>
+          <option value="o">A round mouth</option>
+        </select>
+      </div>
+      <div class="control-row">
+        <label for="accessoryChoice">Accessory</label>
+        <select id="accessoryChoice">
+          <option value="hat">A magic hat</option>
+          <option value="glasses">Glasses</option>
+          <option value="glow">A glowing firefly</option>
+          <option value="none">No accessory</option>
+        </select>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="applyDecor">✨ Apply Decorations</button>
+      <button class="btn secondary" id="sayDecor">🔊 Listen to the words</button>
+    </div>
+    <div class="feedback" id="decorFeedback" aria-live="polite"></div>
+  </section>
+
+  <section class="panel" id="memory">
+    <h2>🧠 Halloween Memory Game</h2>
+    <p class="intro">Flip the cards and find all four pairs. When you find a match, the word appears under the picture and you can hear its pronunciation.</p>
+    <div class="small" id="memoryStatus">Pairs found: 0 of 4</div>
+    <div class="memory-grid" id="memoryGrid"></div>
+    <div class="feedback" id="memoryFeedback" aria-live="polite"></div>
+    <div class="actions">
+      <button class="btn secondary" id="restartMemory">↻ Play Again</button>
+    </div>
+    <div class="badge" id="memoryBadge">🏆 Excellent! You found every pair!</div>
+  </section>
+</main>
+
+<footer>YOSRA — Learn English through imagination ✦</footer>
+
+<script>
+"use strict";
+
+/* English speech: prefer US English and wait for voices to load. */
+const EnglishSpeech = (() => {
+  const synth = "speechSynthesis" in window ? window.speechSynthesis : null;
+  let pending = false;
+
+  function findEnglishVoice() {
+    if (!synth) return null;
+    const voices = synth.getVoices();
+    return voices.find(v => /^en[-_]us$/i.test(v.lang))
+      || voices.find(v => /^en([-_]|$)/i.test(v.lang))
+      || null;
+  }
+
+  function speak(text) {
+    if (!synth) {
+      showToast("Speech is not available in this browser.");
+      return;
+    }
+
+    const phrase = String(text || "").trim();
+    if (!phrase) return;
+    synth.cancel();
+
+    function speakNow() {
+      const voice = findEnglishVoice();
+      if (!voice) {
+        showToast("No English voice was found. Install or enable an English voice in your phone's text-to-speech settings.");
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(phrase);
+      utterance.lang = "en-US";
+      utterance.voice = voice;
+      utterance.rate = 0.88;
+      utterance.pitch = 1;
+      utterance.onerror = () => showToast("Speech failed. Check your phone's text-to-speech settings.");
+      synth.speak(utterance);
+    }
+
+    if (findEnglishVoice()) {
+      speakNow();
+      return;
+    }
+
+    if (pending) return;
+    pending = true;
+    let finished = false;
+
+    const onChanged = () => {
+      if (finished) return;
+      finished = true;
+      pending = false;
+      synth.removeEventListener("voiceschanged", onChanged);
+      speakNow();
+    };
+
+    synth.addEventListener("voiceschanged", onChanged);
+
+    window.setTimeout(() => {
+      if (finished) return;
+      finished = true;
+      pending = false;
+      synth.removeEventListener("voiceschanged", onChanged);
+      speakNow();
+    }, 1200);
+  }
+
+  if (synth) synth.addEventListener("voiceschanged", findEnglishVoice);
+  return { speak };
+})();
+
+function showToast(message) {
+  const old = document.getElementById("globalToast");
+  if (old) old.remove();
+
+  const toast = document.createElement("div");
+  toast.id = "globalToast";
+  toast.setAttribute("role", "status");
+  Object.assign(toast.style, {
+    position:"fixed",left:"12px",right:"12px",bottom:"18px",zIndex:"1000",
+    background:"#fff5e7",color:"#251a34",padding:"13px 16px",
+    borderRadius:"14px",boxShadow:"0 5px 25px #0007",
+    fontSize:"14px",fontWeight:"700",lineHeight:"1.5",textAlign:"center"
+  });
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  window.setTimeout(() => toast.remove(), 4500);
+}
+
+/* Navigation */
+document.querySelectorAll(".tab").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    button.classList.add("active");
+    document.getElementById(button.dataset.tab).classList.add("active");
+  });
+});
+
+/* Score */
+let totalScore = 0;
+const completedActivities = new Set();
+
+function addScore(points) {
+  totalScore += points;
+  document.getElementById("score").textContent = totalScore;
+}
+function completeActivity(name) {
+  completedActivities.add(name);
+  document.getElementById("completed").textContent = completedActivities.size;
+}
+
+/* Quiz */
+const questions = [
+  {
+    q:"What does Dino buy?",
+    answers:["A huge pumpkin","A small cake","A blue hat","A balloon"],
+    correct:0,
+    explain:"Correct! Dino buys a huge pumpkin."
+  },
+  {
+    q:"Where does Dino put the pumpkin?",
+    answers:["On the bed","On the table","In the garden","Under the chair"],
+    correct:1,
+    explain:"Exactly! He puts the pumpkin on the table."
+  },
+  {
+    q:"What does Dino draw on the pumpkin?",
+    answers:["Flowers","A cat","Two eyes and a smile","A house"],
+    correct:2,
+    explain:"Well done! He gives it two eyes and a smile."
+  },
+  {
+    q:"Which little creature can produce light?",
+    answers:["A bee","A firefly","An ant","A ladybug"],
+    correct:1,
+    explain:"That's right! A firefly is a small insect that produces light."
+  },
+  {
+    q:"What happens at midnight?",
+    answers:["The pumpkin starts walking away","Dino goes to school","It snows indoors","The table falls over"],
+    correct:0,
+    explain:"Great! At midnight, the pumpkin starts walking away."
+  }
+];
+
+let quizIndex = 0;
+let quizAnswered = false;
+let quizFinished = false;
+let quizScore = 0;
+
+const questionText = document.getElementById("questionText");
+const questionNumber = document.getElementById("questionNumber");
+const answerOptions = document.getElementById("answerOptions");
+const quizFeedback = document.getElementById("quizFeedback");
+const nextQuestion = document.getElementById("nextQuestion");
+const quizProgress = document.getElementById("quizProgress");
+const quizBadge = document.getElementById("quizBadge");
+
+function renderQuestion() {
+  const q = questions[quizIndex];
+  quizAnswered = false;
+  questionText.textContent = q.q;
+  questionNumber.textContent = `Question ${quizIndex + 1} of ${questions.length}`;
+  quizProgress.style.width = `${quizIndex / questions.length * 100}%`;
+  quizFeedback.textContent = "";
+  nextQuestion.disabled = true;
+  nextQuestion.textContent = quizIndex === questions.length - 1
+    ? "See My Result 🏆" : "Next Question →";
+  answerOptions.replaceChildren();
+
+  q.answers.forEach((answer, index) => {
+    const button = document.createElement("button");
+    button.className = "option";
+    button.type = "button";
+    button.textContent = answer;
+    button.addEventListener("click", () => chooseAnswer(index, button));
+    answerOptions.appendChild(button);
+  });
+}
+
+function chooseAnswer(index, button) {
+  if (quizAnswered || quizFinished) return;
+  quizAnswered = true;
+  const q = questions[quizIndex];
+  const buttons = [...answerOptions.querySelectorAll("button")];
+
+  buttons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correct) b.classList.add("correct");
+  });
+
+  if (index === q.correct) {
+    quizScore++;
+    addScore(10);
+    quizFeedback.textContent = "✅ " + q.explain;
+    quizFeedback.style.color = "var(--green)";
+    candyRain();
+  } else {
+    button.classList.add("wrong");
+    quizFeedback.textContent = "💡 Not quite. " + q.explain;
+    quizFeedback.style.color = "var(--gold)";
+  }
+
+  nextQuestion.disabled = false;
+  quizProgress.style.width = `${(quizIndex + 1) / questions.length * 100}%`;
+}
+
+document.getElementById("listenQuestion").addEventListener("click", () => {
+  EnglishSpeech.speak(questions[quizIndex].q);
+});
+
+nextQuestion.addEventListener("click", () => {
+  if (!quizAnswered || quizFinished) return;
+
+  if (quizIndex < questions.length - 1) {
+    quizIndex++;
+    renderQuestion();
+    return;
+  }
+
+  quizFinished = true;
+  nextQuestion.disabled = true;
+  questionNumber.textContent = "Challenge completed!";
+  questionText.textContent = `Your score: ${quizScore} / ${questions.length}`;
+  answerOptions.replaceChildren();
+
+  quizFeedback.textContent = quizScore >= 4
+    ? "🏅 Fantastic! You're a Halloween champion!"
+    : quizScore >= 2
+      ? "🍬 Good job! Try again to earn more points."
+      : "🎃 Keep practicing. You're getting better!";
+
+  quizBadge.classList.toggle("show", quizScore >= 4);
+  completeActivity("quiz");
+  if (quizScore >= 4) leafRain();
+});
+
+document.getElementById("restartQuiz").addEventListener("click", () => {
+  quizIndex = 0;
+  quizAnswered = false;
+  quizFinished = false;
+  quizScore = 0;
+  quizBadge.classList.remove("show");
+  renderQuestion();
+});
+
+/* Pumpkin decorations */
+const eyeChoice = document.getElementById("eyeChoice");
+const mouthChoice = document.getElementById("mouthChoice");
+const accessoryChoice = document.getElementById("accessoryChoice");
+const eyes = document.getElementById("eyes");
+const mouth = document.getElementById("mouth");
+const accessory = document.getElementById("accessory");
+const glasses = document.getElementById("glasses");
+const glow = document.getElementById("glow");
+const decorFeedback = document.getElementById("decorFeedback");
+
+function makeSvg(tag, attrs) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+  return el;
+}
+
+function decoratePumpkin() {
+  eyes.replaceChildren();
+  mouth.replaceChildren();
+  accessory.style.display = "none";
+  glasses.style.display = "none";
+  glow.style.display = "none";
+
+  if (eyeChoice.value === "triangle") {
+    eyes.append(
+      makeSvg("path",{d:"M65 104 L91 82 L98 116Z",fill:"#24152a",stroke:"#6e321f","stroke-width":"2"}),
+      makeSvg("path",{d:"M145 116 L152 82 L178 104Z",fill:"#24152a",stroke:"#6e321f","stroke-width":"2"})
+    );
+  } else if (eyeChoice.value === "round") {
+    eyes.append(
+      makeSvg("circle",{cx:"82",cy:"103",r:"15",fill:"#24152a"}),
+      makeSvg("circle",{cx:"158",cy:"103",r:"15",fill:"#24152a"})
+    );
+  } else {
+    eyes.append(
+      makeSvg("path",{d:"M62 104 Q80 84 100 104",fill:"none",stroke:"#24152a","stroke-width":"8","stroke-linecap":"round"}),
+      makeSvg("path",{d:"M140 104 Q160 84 180 104",fill:"none",stroke:"#24152a","stroke-width":"8","stroke-linecap":"round"})
+    );
+  }
+
+  if (mouthChoice.value === "smile") {
+    mouth.append(makeSvg("path",{d:"M70 145 Q120 192 170 145 Q145 204 120 187 Q95 204 70 145Z",fill:"#24152a",stroke:"#6e321f","stroke-width":"3"}));
+  } else if (mouthChoice.value === "zigzag") {
+    mouth.append(makeSvg("path",{d:"M70 151 L89 139 L107 154 L124 139 L143 154 L170 143 L163 173 L145 184 L125 173 L106 185 L85 173Z",fill:"#24152a",stroke:"#6e321f","stroke-width":"3"}));
+  } else {
+    mouth.append(makeSvg("ellipse",{cx:"120",cy:"163",rx:"18",ry:"25",fill:"#24152a",stroke:"#6e321f","stroke-width":"3"}));
+  }
+
+  if (accessoryChoice.value === "hat") accessory.style.display = "";
+  else if (accessoryChoice.value === "glasses") glasses.style.display = "";
+  else if (accessoryChoice.value === "glow") glow.style.display = "";
+
+  decorFeedback.textContent = "✨ Your pumpkin is ready!";
+  decorFeedback.style.color = "var(--gold)";
+  completeActivity("decor");
+}
+
+document.getElementById("applyDecor").addEventListener("click", decoratePumpkin);
+
+document.getElementById("sayDecor").addEventListener("click", () => {
+  const words = {
+    triangle:"triangle eyes",
+    round:"round eyes",
+    sleepy:"mischievous eyes",
+    smile:"a smile",
+    zigzag:"a zigzag mouth",
+    o:"a round mouth",
+    hat:"a magic hat",
+    glasses:"glasses",
+    glow:"a glowing firefly",
+    none:"no accessory"
+  };
+  EnglishSpeech.speak(
+    "Eyes: " + words[eyeChoice.value] +
+    ". Mouth: " + words[mouthChoice.value] +
+    ". Accessory: " + words[accessoryChoice.value] + "."
+  );
+});
+
+/* Memory game */
+const memoryPairs = [
+  {word:"pumpkin",emoji:"🎃"},
+  {word:"ghost",emoji:"👻"},
+  {word:"bat",emoji:"🦇"},
+  {word:"firefly",emoji:"✨"}
+];
+
+let memoryDeck = [];
+let selectedCards = [];
+let matchedPairs = 0;
+let memoryLocked = false;
+let memoryTimer = null;
+let memoryGameFinished = false;
+
+const memoryGrid = document.getElementById("memoryGrid");
+const memoryFeedback = document.getElementById("memoryFeedback");
+const memoryStatus = document.getElementById("memoryStatus");
+const memoryBadge = document.getElementById("memoryBadge");
+
+function shuffle(array) {
+  const result = array.slice();
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function startMemory() {
+  if (memoryTimer) {
+    clearTimeout(memoryTimer);
+    memoryTimer = null;
+  }
+
+  memoryDeck = shuffle(memoryPairs.flatMap((pair, pairId) => [
+    {pairId,word:pair.word,emoji:pair.emoji,type:"image"},
+    {pairId,word:pair.word,emoji:pair.emoji,type:"word"}
+  ]));
+
+  selectedCards = [];
+  matchedPairs = 0;
+  memoryLocked = false;
+  memoryGameFinished = false;
+  memoryFeedback.textContent = "";
+  memoryBadge.classList.remove("show");
+  renderMemory();
+}
+
+function renderMemory() {
+  memoryGrid.replaceChildren();
+
+  memoryDeck.forEach((card, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "memory-card";
+
+    const isMatched = card.matched === true;
+    const isRevealed = card.revealed === true;
+
+    if (isMatched || isRevealed) {
+      button.classList.add(isMatched ? "matched" : "revealed");
+      const symbol = document.createElement("span");
+      symbol.textContent = card.type === "image" ? card.emoji : "🔤";
+      const word = document.createElement("span");
+      word.className = "word";
+      word.textContent = card.word;
+      button.append(symbol, word);
+      button.setAttribute("aria-label", card.word);
+    } else {
+      button.textContent = "❔";
+      button.setAttribute("aria-label", "Hidden card");
+    }
+
+    button.disabled = isMatched || isRevealed || memoryLocked || memoryGameFinished;
+    button.addEventListener("click", () => flipMemory(index));
+    memoryGrid.appendChild(button);
+  });
+
+  memoryStatus.textContent = `Pairs found: ${matchedPairs} of ${memoryPairs.length}`;
+}
+
+function flipMemory(index) {
+  if (memoryLocked || memoryGameFinished) return;
+  const card = memoryDeck[index];
+  if (card.matched || card.revealed) return;
+
+  card.revealed = true;
+  selectedCards.push(index);
+  renderMemory();
+
+  if (selectedCards.length !== 2) return;
+
+  const [firstIndex, secondIndex] = selectedCards;
+  const first = memoryDeck[firstIndex];
+  const second = memoryDeck[secondIndex];
+
+  if (first.pairId === second.pairId && first.type !== second.type) {
+    first.matched = true;
+    second.matched = true;
+    selectedCards = [];
+    matchedPairs++;
+    addScore(15);
+    memoryFeedback.textContent = `✅ Great job! ${first.word}!`;
+    memoryFeedback.style.color = "var(--green)";
+    renderMemory();
+    EnglishSpeech.speak(first.word);
+
+    if (matchedPairs === memoryPairs.length) {
+      memoryGameFinished = true;
+      memoryBadge.classList.add("show");
+      memoryFeedback.textContent = "🏆 You found all the pairs!";
+      completeActivity("memory");
+      leafRain();
+      renderMemory();
+    }
+  } else {
+    memoryLocked = true;
+    memoryFeedback.textContent = "🔎 Not a match. Try again!";
+    memoryFeedback.style.color = "var(--gold)";
+
+    memoryTimer = window.setTimeout(() => {
+      first.revealed = false;
+      second.revealed = false;
+      selectedCards = [];
+      memoryLocked = false;
+      memoryTimer = null;
+      renderMemory();
+    }, 950);
+  }
+}
+
+document.getElementById("restartMemory").addEventListener("click", startMemory);
+
+/* Celebration effects */
+function createRain(symbols, count) {
+  for (let i = 0; i < count; i++) {
+    const item = document.createElement("div");
+    item.className = "falling-item";
+    item.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    item.style.left = `${Math.random() * 100}vw`;
+    item.style.setProperty("--drift", `${Math.random() * 160 - 80}px`);
+    item.style.animationDuration = `${2.2 + Math.random() * 2.2}s`;
+    document.body.appendChild(item);
+    window.setTimeout(() => item.remove(), 4800);
+  }
+}
+function candyRain() {
+  createRain(["🍬","🍭","🍬","🍂"],16);
+}
+function leafRain() {
+  createRain(["🍂","🍁","✨","🎃"],20);
+}
+
+/* Start the game */
+renderQuestion();
+decoratePumpkin();
+startMemory();
+</script>
+</body>
+</html>
